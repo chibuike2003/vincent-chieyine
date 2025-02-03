@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscribers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="../static/logos.jpg">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2.5em;
+            color: #333;
+        }
+
+        .message-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            width: auto;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            display: block;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .action-buttons button {
+            margin: 5px;
+        }
+
+        .update-btn {
+            background-color: #007BFF;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .update-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-modal {
+            font-size: 24px;
+            color: #333;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #dc3545;
+        }
+
+        .modal h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal input, .modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .modal button {
+            background-color: #28a745;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal button:hover {
+            background-color: #218838;
+        }
+
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 2.2em;
+            }
+
+            table {
+                width: 95%;
+            }
+
+            th, td {
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .modal-content {
+                width: 80%;
+                padding: 20px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 10px 18px;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            table {
+                width: 90%;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .modal-content {
+                width: 90%;
+                padding: 20px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .message-container button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            table {
+                width: 100%;
+                display: block;
+                overflow-x: auto;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .action-buttons button {
+                width: 100%;
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .modal input, .modal textarea {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Subscribers List</h1>
+
+    <div class="message-container">
+        <button onclick="openModal()">Send Message</button>
+    </div>
+    
+    <div style="margin: 10px; text-align: center;">
+        <button onclick="selectAllCheckboxes()">Select All</button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)"></th>
+                <th>Email</th>
+                <th>Subscribed At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subscriber in subscribers %}
+            <tr>
+                <td><input type="checkbox" class="subscriber-checkbox" data-email="{{ subscriber.email }}"></td>
+                <td class="email-cell">
+                    {% if subscriber.deleted %}
+                        <em>Email Deleted</em>
+                    {% else %}
+                        {{ subscriber.email }}
+                    {% endif %}
+                </td>
+                <td>{{ subscriber.subscribed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="update-btn" onclick="updateSubscriber('{{ subscriber.email }}')">Update</button>
+                        <button class="delete-btn" onclick="deleteSubscriber('{{ subscriber.email }}')">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">No subscribers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="modal" id="messageModal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="closeModal()">&times;</div>
+            <h2>Send Message</h2>
+            <form id="messageForm">
+                <input type="file" name="file" required>
+                <input type="text" name="topic" placeholder="Topic" required>
+                <textarea name="message" rows="5" placeholder="Write your message here..." required></textarea>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('messageModal');
+
+        function openModal() {
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+
+        function toggleSelectAll(selectAllCheckbox) {
+            const checkboxes = document.querySelectorAll('.subscriber-checkbox');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+
+        function selectAllCheckboxes() {
+            const selectAllCheckbox = document.getElementById('select-all');
+            selectAllCheckbox.checked = !selectAllCheckbox.checked;
+            toggleSelectAll(selectAllCheckbox);
+        }
+
+        document.getElementById('messageForm').onsubmit = function(event) {
+            event.preventDefault();
+            const selectedEmails = [];
+            const checkboxes = document.querySelectorAll('.subscriber-checkbox:checked');
+            checkboxes.forEach((checkbox) => {
+                selectedEmails.push(checkbox.getAttribute('data-email'));
+            });
+
+            if (selectedEmails.length === 0) {
+                alert('Please select at least one email to send the message.');
+                return;
+            }
+
+            const confirmSend = confirm('Are you sure you want to send the message to the selected emails?');
+            if (confirmSend) {
+                const topic = document.querySelector('input[name="topic"]').value;
+                const message = document.querySelector('textarea[name="message"]').value;
+                console.log('Sending message to:', selectedEmails);
+                console.log('Subject:', 'Updates from VINCENT CHIEYINE & CO');
+                console.log('Message:', message);
+                alert('Message sent successfully!');
+                closeModal();
+            }
+        };
+
+        function updateSubscriber(email) {
+            const newEmail = prompt('Update the email:', email);
+            if (newEmail) {
+                alert(`Email for ${email} updated to ${newEmail}`);
+            }
+        }
+
+        function deleteSubscriber(email) {
+            const confirmDelete = confirm(`Are you sure you want to delete ${email}?`);
+            if (confirmDelete) {
+                alert(`${email} has been deleted.`);
+            }
+        }
+    </script>
+</body>
+</html>
